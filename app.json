@@ -9,7 +9,13 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "WorkSync uses your location to verify you are at your work site when clocking in and out.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "WorkSync uses your location to verify you are at your work site when clocking in and out.",
+          "NSUserNotificationsUsageDescription": "We use notifications to remind you about upcoming shifts and updates.",
+          "UIBackgroundModes": ["location"]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -18,8 +24,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+  "edgeToEdgeEnabled": true,
+  "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
@@ -34,11 +40,9 @@
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
-          "dark": {
-            "backgroundColor": "#000000"
-          }
+          "dark": { "backgroundColor": "#000000" }
         }
-      ]
+  ]
     ],
     "experiments": {
       "typedRoutes": true,
