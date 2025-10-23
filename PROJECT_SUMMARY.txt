@@ -1,0 +1,77 @@
+WorkSync — Project Overview
+
+Summary
+- WorkSync is a cross‑platform workforce management app (iOS, Android, Web) built with Expo Router, React Native, and Supabase.
+- Two roles: employee and admin. Row‑Level Security (RLS) in Postgres enforces per‑user access.
+- Core domains: shifts, availability, time tracking, notifications, geofencing, and basic profiles.
+
+Tech Stack
+- App: Expo (SDK 54), React Native 0.81, React 19, Expo Router ~6
+- Backend: Supabase (Postgres + RLS, Auth, Realtime, Storage)
+- Notifications: expo-notifications, plus Supabase Edge Functions to send reminders/alerts
+- Location/Geofencing: expo-location, expo-task-manager
+- Web: Static export (app.json web.output=static), deployable to Vercel
+
+Architecture & Patterns
+- Feature screens under app/(tabs) for employees and app/(admin) for admins
+- Service modules under lib/ encapsulate Supabase queries per domain (availability, shifts, profile, notifications, admin services)
+- Realtime subscriptions (Supabase channels) where needed (e.g., availability, shifts)
+- Edge Functions for server-side jobs:
+  • weekly-availability-reminder (nudges users to submit availability)
+  • shift-notifier (notifies about upcoming shifts)
+- AuthContext centralizes Supabase auth session, sign-in/up/out, and password reset deep links
+
+Data Model (key tables)
+- profiles: { id (auth.users.id), full_name, role('employee'|'admin'), created_at, updated_at }
+- sites: { id, name, address, latitude, longitude, geo_fence_radius, ... }
+- shifts: { id, site_id, employee_id, start_time, end_time, status('scheduled'|'published'|'accepted'|'declined'|'completed'|'cancelled') }
+- availability: { id, employee_id, start_time, end_time, is_recurring }
+- time_punches: { id, employee_id, shift_id, type('in'|'out'|'break_start'|'break_end'), timestamp, lat/lng }
+- notifications: { id, user_id, title, body, data, read, created_at }
+- push_tokens: { id, user_id, token, platform, last_seen }
+
+Security (RLS)
+- Users can SELECT/UPDATE their own profile; INSERT allowed for own id to recover missing rows.
+- Users can manage their own availability and time punches; view own shifts/notifications/push_tokens.
+- Admins can view/manage across entities via JWT user_metadata.role = 'admin'.
+
+Employee Experience (app/(tabs))
+- Home: polished landing with notifications badge
+- Shifts: Upcoming & Recent sections; calendar day list; empty states; proper ordering (newest-first for recent)
+- Availability: CRUD with modal wheel time picker; FlatList for scrolling; confirm delete + immediate refresh; fixed local/UTC date handling; sorted by latest
+- Timesheet: daily entries with badges and chips; newest-first; pull-to-refresh; lightweight fortnight summary (hours + date label)
+- Profile: view avatar/name/email/role; edit full name; reset password via deep link; logout. Profile upsert uses update-first, insert-if-missing to satisfy RLS.
+
+Admin Experience (app/(admin))
+- Role gating: AdminRoute checks user.user_metadata.role === 'admin'. Entry redirect routes admins to /(admin)/dashboard.
+- Dashboard: KPI cards with period filter (7d/30d) — upcoming shifts, unassigned shifts, need-publish count, total employees.
+- Shifts Management: month navigator; list with filters (status, employee); create/edit/delete shifts; assign employee & site; bulk publish scheduled shifts for current month.
+- Employees: list employees from profiles; promote/demote admin role; invite employees via Supabase sign-up (stores role in user metadata). (Service implemented; UI integrated or pending small polish.)
+
+Notifications & Background
+- Push tokens stored per user in push_tokens; client uses expo-notifications.
+- Edge Functions send weekly availability reminders and shift notifications.
+- Geofencing (expo-location + task manager): detects when a user exits a work site and can trigger a local/push alert. Bypassed on web via EXPO_PUBLIC_BYPASS_GEOFENCE.
+
+Auth & Password Reset
+- Supabase Auth manages sessions; AuthContext listens for changes.
+- Password reset uses Supabase resetPasswordForEmail with redirect to app/auth/reset; the reset screen sets the new password via supabase.auth.updateUser.
+
+Environment Variables (public at build time)
+- EXPO_PUBLIC_SUPABASE_URL
+- EXPO_PUBLIC_SUPABASE_ANON_KEY
+- EXPO_PUBLIC_BYPASS_GEOFENCE (1 on web to avoid native geofencing)
+
+Deployment
+- Web: Static export (dist) can be deployed on Vercel. Add env vars in Vercel and set build command to "npx expo export --platform web".
+- Mobile: Use EAS Build for development (to test push/geofencing) and production App Store/Play Store builds.
+
+Known Limitations / Notes
+- expo-notifications is limited in Expo Go; use a development build to fully test.
+- Geofencing and background tasks are not available on web; bypass flag is provided.
+- Sites management UI is intentionally minimal/not in scope per current requirements.
+
+Suggested Next Steps
+- Complete/refine Employees admin UI (invites list, search, email display if needed)
+- Optional: avatar upload via Supabase Storage; admin shift templates; advanced filters/exports
+- CI for web (Vercel) and EAS build profiles for dev/preview/prod

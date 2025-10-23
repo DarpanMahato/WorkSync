@@ -13,9 +13,14 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "WorkSync uses your location to verify you are at your work site when clocking in and out.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "WorkSync uses your location to verify you are at your work site when clocking in and out.",
-          "NSUserNotificationsUsageDescription": "We use notifications to remind you about upcoming shifts and updates.",
-          "UIBackgroundModes": ["location"]
-      }
+        "NSUserNotificationsUsageDescription": "We use notifications to remind you about upcoming shifts and updates.",
+        "UIBackgroundModes": [
+          "location",
+          "location"
+        ],
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "bundleIdentifier": "com.darpwn.worksync"
     },
     "android": {
       "adaptiveIcon": {
@@ -24,8 +29,9 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-  "edgeToEdgeEnabled": true,
-  "predictiveBackGestureEnabled": false
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "com.darpwn.worksync"
     },
     "web": {
       "output": "static",
@@ -40,13 +46,22 @@
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
-          "dark": { "backgroundColor": "#000000" }
+          "dark": {
+            "backgroundColor": "#000000"
+          }
         }
-  ]
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "9bb82cda-0393-40a4-9a7a-ad8aa0e1ac50"
+      }
+    },
+    "owner": "darpwn"
   }
 }
